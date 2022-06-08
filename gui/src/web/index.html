@@ -6,6 +6,8 @@
             let wasm_memory
             let js_objects = [null]
 
+            const decoder = new TextDecoder();
+
             function setupCanvas() {
                 console.log('start')
                 let canvas = document.getElementById('canvas')
@@ -18,13 +20,6 @@
             function clearToBlue() {
                 gl.clearColor(0.1, 0.1, 0.9, 1.0)
                 gl.clear(gl.COLOR_BUFFER_BIT)
-            }
-
-            importObject = {
-                env: {
-                    setupCanvas,
-                    clearToBlue
-                }
             }
 
             const importObject = {
