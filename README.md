@@ -40,4 +40,6 @@ hahoe
 ### 실행방법
 
 ```bash
+$ yarn dev
+# 그 외 명령어는 최상위의 package.json을 참고해주세요.
 ```
