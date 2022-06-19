@@ -7,7 +7,6 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "checkJs": true,
-    "strict": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,

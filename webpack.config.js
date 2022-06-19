@@ -24,6 +24,7 @@ const config = {
     }),
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, 'gui'),
+      outDir: "pkg",
     }),
   ],
   module: {
@@ -31,15 +32,17 @@ const config = {
       {
         test: /\.ts$/i,
         loader: "ts-loader",
-        exclude: ["/node_modules/"],
+        exclude: ["/node_modules", /\.wasm$/],
       },
       {
         test: /\.css$/i,
         use: [stylesHandler, "css-loader"],
+        exclude: [ /\.wasm$/],
       },
       {
         test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
         type: "asset",
+        exclude: [ /\.wasm$/],
       },
     ],
   },
@@ -47,11 +50,11 @@ const config = {
     asyncWebAssembly: true,
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js"],
+    extensions: [".tsx", ".ts", ".js", '.wasm'],
   },
 };
 
-module.exports = () => {
+module.exports = (_, env) => {
   if (isProduction) {
     config.mode = "production";
 
