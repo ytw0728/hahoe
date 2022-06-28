@@ -1,6 +1,5 @@
 [workspace]
 members = [
   "gui",
-  "core",
-  "runner"
+  "core"
 ]
