@@ -1,9 +1,8 @@
-use terrain::*;
 use terrain::model::pixel::Pixel;
+use terrain::*;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader, console};
-use terrain::test_runner1;
+use wasm_bindgen::JsCast;
+use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
 fn SetColor(context : &WebGl2RenderingContext, bitmap : &Vec<Vec<Pixel>>){
     if bitmap.is_empty() { return; }
@@ -108,14 +107,6 @@ pub fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
     let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
-
-    console::log_1(&JsValue::from_str("hello"));
-    let t = test_runner1().unwrap();
-    t.into_iter().for_each(|row|{
-        row.into_iter().for_each(|v|{
-            console::log_1(&JsValue::from_f64(v.height));
-        })
-    });
 
     let context = canvas
         .get_context("webgl2")?
