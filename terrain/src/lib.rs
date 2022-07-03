@@ -3,7 +3,7 @@ use model::noise_param::NoiseParam;
 use model::pixel::Pixel;
 use model::terrain::Terrain;
 
-mod model;
+pub mod model;
 
 pub fn test_runner1() -> Option<Vec<Vec<Pixel>>> {
     const WIDTH: usize = 100;
