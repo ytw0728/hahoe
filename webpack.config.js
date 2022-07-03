@@ -10,6 +10,9 @@ const config = {
     open: true,
     host: "localhost",
   },
+  watchOptions: {
+    aggregateTimeout: 600,
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public/index.html'),

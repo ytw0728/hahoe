@@ -45,9 +45,6 @@ hahoe
 $ rustup target add wasm32-unknown-unknown
 // target으로 사용할 wasm32-unknown-unknown 구성 (Tier 2 target)
 
-$ cd gui && wasm-pack build
-// gui로 이동해 wasm pkg 생성
-
 $ yarn dev
-// 최상위 작업 디렉토리에서 webpack-dev-server 실행
+// 그 외 명령어는 package.json을 참고해주세요!
 ```
