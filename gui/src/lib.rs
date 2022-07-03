@@ -95,7 +95,7 @@ fn SetRectangle(context : &WebGl2RenderingContext, width : usize, height : usize
 }
 
 
-#[wasm_bindgen(start)]
+#[wasm_bindgen]
 pub fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
