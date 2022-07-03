@@ -1,22 +1,25 @@
+use terrain::*;
+use terrain::model::pixel::Pixel;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader, console};
 use terrain::test_runner1;
 
-const WIDTH: usize = 800;
-const HEIGHT: usize = 600;
-
-fn SetColor(context : &WebGl2RenderingContext, width : usize, height : usize){
-    let mut color = Vec::<f32>::with_capacity((width * height * 24) as usize);
+fn SetColor(context : &WebGl2RenderingContext, bitmap : &Vec<Vec<Pixel>>){
+    if bitmap.is_empty() { return; }
+    if bitmap[0].is_empty() { return; }
     
+    let width = bitmap.len();
+    let height = bitmap[0].len();
+    let mut color = Vec::<f32>::with_capacity((width * height * 24) as usize);
+
     for x in 0..width
     {
         for y in 0..height
         {
-            let greenratio = rand::random::<f32>();
             for _ in 0..6 {
                 color.push(0.0f32);
-                color.push(greenratio);
+                color.push(bitmap[x][y].height as f32);
                 color.push(0.0f32);
                 color.push(1.0f32);
             }
@@ -36,7 +39,12 @@ fn SetColor(context : &WebGl2RenderingContext, width : usize, height : usize){
     }
 }
 
-fn SetRectangle(context : &WebGl2RenderingContext, width : usize, height : usize){
+fn SetRectangle(context : &WebGl2RenderingContext, bitmap : &Vec<Vec<Pixel>>){
+    if bitmap.is_empty() { return; }
+    if bitmap[0].is_empty() { return; }
+    
+    let width = bitmap.len();
+    let height = bitmap[0].len();
 
     let width_ratio = 2. / width as f32;
     let height_ratio = 2./ height as f32;
@@ -52,7 +60,7 @@ fn SetRectangle(context : &WebGl2RenderingContext, width : usize, height : usize
         {
             let x1 =  start_width_ratio + x as f32 * width_ratio;
             let x2 = start_width_ratio + (x + 1) as f32 * width_ratio;
-            let y1 = start_height_ratio + y as f32* height_ratio;
+            let y1 = start_height_ratio + y as f32 * height_ratio;
             let y2 = start_height_ratio + (y + 1) as f32 * height_ratio;
             
             vertices.push(x1);
@@ -174,7 +182,9 @@ pub fn start() -> Result<(), JsValue> {
     let color_buffer = context.create_buffer().ok_or("Failed to create buffer")?;
     context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&color_buffer));
 
-    SetColor(&context, WIDTH, HEIGHT);
+    let optbitmap = test_runner1();
+    let bitmap = optbitmap.unwrap();
+    SetColor(&context, &bitmap);
 
     context.enable_vertex_attrib_array(color_attribute_location as u32);
     context.vertex_attrib_pointer_with_i32(color_attribute_location as u32, 4, WebGl2RenderingContext::FLOAT, false, 0, 0);
@@ -190,7 +200,7 @@ pub fn start() -> Result<(), JsValue> {
     context.clear_color(0.0, 0.0, 0.0, 1.0);
     context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
-    SetRectangle(&context, WIDTH, HEIGHT);
+    SetRectangle(&context, &bitmap);
     
     Ok(())
 }
