@@ -6,8 +6,11 @@
   "author": "ytw0728 <ytw0728@gmail.com>",
   "license": "ISC",
   "scripts": {
-    "dev": "webpack serve --mode=development",
-    "build": "webpack --mode=production --node-env=production",
+    "dev": "yarn exec run-p -- -nl \"serve:web\" \"watch:wasm\"",
+    "serve:web": "yarn exec wait-on dist-wasm && webpack serve --mode=development",
+    "watch:wasm": "cargo watch -- yarn build:wasm",
+    "build:web": "yarn build:wasm && webpack --mode=production --node-env=production",
+    "build:wasm": "wasm-pack build gui --out-dir ../dist-wasm",
     "watch": "webpack --watch"
   },
   "devDependencies": {
@@ -23,7 +26,9 @@
     "webpack-dev-server": "^4.9.1"
   },
   "dependencies": {
-    "@wasm-tool/wasm-pack-plugin": "^1.6.0"
+    "@wasm-tool/wasm-pack-plugin": "^1.6.0",
+    "npm-run-all": "^4.1.5",
+    "wait-on": "^6.0.1"
   },
   "volta": {
     "node": "16.15.1",

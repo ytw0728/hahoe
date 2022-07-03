@@ -1,13 +1,5 @@
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
-
-const isProduction = process.env.NODE_ENV == "production";
-
-const stylesHandler = isProduction
-  ? MiniCssExtractPlugin.loader
-  : "style-loader";
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 const config = {
   entry: path.resolve(__dirname, 'public/index.ts'),
@@ -18,13 +10,12 @@ const config = {
     open: true,
     host: "localhost",
   },
+  watchOptions: {
+    aggregateTimeout: 600,
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public/index.html'),
-    }),
-    new WasmPackPlugin({
-      crateDirectory: path.resolve(__dirname, 'gui'),
-      outDir: "pkg",
     }),
   ],
   module: {
@@ -32,35 +23,17 @@ const config = {
       {
         test: /\.ts$/i,
         loader: "ts-loader",
-        exclude: ["/node_modules", /\.wasm$/],
-      },
-      {
-        test: /\.css$/i,
-        use: [stylesHandler, "css-loader"],
-        exclude: [ /\.wasm$/],
-      },
-      {
-        test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
-        type: "asset",
-        exclude: [ /\.wasm$/],
+        exclude: ["/node_modules"],
       },
     ],
   },
   experiments: {
     asyncWebAssembly: true,
+    syncWebAssembly: true
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js", '.wasm'],
+    extensions: [".tsx", ".ts", ".js"],
   },
 };
 
-module.exports = (_, env) => {
-  if (isProduction) {
-    config.mode = "production";
-
-    config.plugins.push(new MiniCssExtractPlugin());
-  } else {
-    config.mode = "development";
-  }
-  return config;
-};
+module.exports = config

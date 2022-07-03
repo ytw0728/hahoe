@@ -1,5 +1,6 @@
 [workspace]
 members = [
   "gui",
-  "core"
+  "core",
+  "terrain"
 ]

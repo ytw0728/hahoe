@@ -1,8 +1,113 @@
+use terrain::model::pixel::Pixel;
+use terrain::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
-#[wasm_bindgen(start)]
+const ZERO_HEIGHT: f32 = 0.0;
+
+fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
+    if bitmap.is_empty() {
+        return;
+    }
+    if bitmap[0].is_empty() {
+        return;
+    }
+
+    let width = bitmap.len();
+    let height = bitmap[0].len();
+    let mut color = Vec::<f32>::with_capacity((width * height * 24) as usize);
+
+    for x in 0..width {
+        for y in 0..height {
+            for _ in 0..6 {
+                color.push(0.0f32);
+                color.push(bitmap[x][y].height as f32);
+                color.push(0.0f32);
+                color.push(1.0f32);
+            }
+        }
+    }
+
+    unsafe {
+        let color_array_buf_view = js_sys::Float32Array::view(&color);
+
+        context.buffer_data_with_array_buffer_view(
+            WebGl2RenderingContext::ARRAY_BUFFER,
+            &color_array_buf_view,
+            WebGl2RenderingContext::STATIC_DRAW,
+        );
+    }
+}
+
+fn make_triangle_position(x1: f32, x2: f32, y1: f32, y2: f32) -> Vec<f32> {
+    let mut vertices = Vec::<f32>::with_capacity(18);
+    vertices.push(x1);
+    vertices.push(y1);
+    vertices.push(ZERO_HEIGHT);
+    vertices.push(x2);
+    vertices.push(y1);
+    vertices.push(ZERO_HEIGHT);
+    vertices.push(x1);
+    vertices.push(y2);
+    vertices.push(ZERO_HEIGHT);
+    vertices.push(x1);
+    vertices.push(y2);
+    vertices.push(ZERO_HEIGHT);
+    vertices.push(x2);
+    vertices.push(y1);
+    vertices.push(ZERO_HEIGHT);
+    vertices.push(x2);
+    vertices.push(y2);
+    vertices.push(ZERO_HEIGHT);
+    vertices
+}
+
+fn set_rectangle(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
+    if bitmap.is_empty() {
+        return;
+    }
+    if bitmap[0].is_empty() {
+        return;
+    }
+
+    let width = bitmap.len();
+    let height = bitmap[0].len();
+
+    let width_ratio = 2. / width as f32;
+    let height_ratio = 2. / height as f32;
+
+    let start_width_ratio = -1.;
+    let start_height_ratio = -1.;
+
+    let mut vertices = Vec::<f32>::with_capacity((width * height * 18) as usize);
+
+    for x in 0..width {
+        for y in 0..height {
+            let x1 = start_width_ratio + x as f32 * width_ratio;
+            let x2 = start_width_ratio + (x + 1) as f32 * width_ratio;
+            let y1 = start_height_ratio + y as f32 * height_ratio;
+            let y2 = start_height_ratio + (y + 1) as f32 * height_ratio;
+
+            vertices.append(&mut make_triangle_position(x1, x2, y1, y2));
+        }
+    }
+
+    unsafe {
+        let positions_array_buf_view = js_sys::Float32Array::view(&vertices);
+
+        context.buffer_data_with_array_buffer_view(
+            WebGl2RenderingContext::ARRAY_BUFFER,
+            &positions_array_buf_view,
+            WebGl2RenderingContext::STATIC_DRAW,
+        );
+
+        let vert_count = (vertices.len() / 3) as i32;
+        draw(&context, vert_count);
+    }
+}
+
+#[wasm_bindgen]
 pub fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
@@ -19,10 +124,14 @@ pub fn start() -> Result<(), JsValue> {
         r##"#version 300 es
  
         in vec4 position;
+        in vec4 a_color;
+
+        out vec4 v_color;
 
         void main() {
         
             gl_Position = position;
+            v_color = a_color;
         }
         "##,
     )?;
@@ -33,21 +142,26 @@ pub fn start() -> Result<(), JsValue> {
         r##"#version 300 es
     
         precision highp float;
+
+        in vec4 v_color;
         out vec4 outColor;
-        
+
         void main() {
-            outColor = vec4(1, 1, 1, 1);
+            outColor = v_color;
         }
         "##,
     )?;
+
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));
 
-    let vertices: [f32; 9] = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
-
+    let color_attribute_location = context.get_attrib_location(&program, "a_color");
     let position_attribute_location = context.get_attrib_location(&program, "position");
-    let buffer = context.create_buffer().ok_or("Failed to create buffer")?;
-    context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buffer));
+
+    let vao = context
+        .create_vertex_array()
+        .ok_or("Could not create vertex array object")?;
+    context.bind_vertex_array(Some(&vao));
 
     // Note that `Float32Array::view` is somewhat dangerous (hence the
     // `unsafe`!). This is creating a raw view into our module's
@@ -57,36 +171,47 @@ pub fn start() -> Result<(), JsValue> {
     //
     // As a result, after `Float32Array::view` we have to be very careful not to
     // do any memory allocations before it's dropped.
-    unsafe {
-        let positions_array_buf_view = js_sys::Float32Array::view(&vertices);
 
-        context.buffer_data_with_array_buffer_view(
-            WebGl2RenderingContext::ARRAY_BUFFER,
-            &positions_array_buf_view,
-            WebGl2RenderingContext::STATIC_DRAW,
-        );
-    }
+    //Set Color
+    let color_buffer = context.create_buffer().ok_or("Failed to create buffer")?;
+    context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&color_buffer));
 
-    let vao = context
-        .create_vertex_array()
-        .ok_or("Could not create vertex array object")?;
-    context.bind_vertex_array(Some(&vao));
+    let optbitmap = test_runner1();
+    let bitmap = optbitmap.unwrap();
+    set_color(&context, &bitmap);
 
-    context.vertex_attrib_pointer_with_i32(0, 3, WebGl2RenderingContext::FLOAT, false, 0, 0);
+    context.enable_vertex_attrib_array(color_attribute_location as u32);
+    context.vertex_attrib_pointer_with_i32(
+        color_attribute_location as u32,
+        4,
+        WebGl2RenderingContext::FLOAT,
+        false,
+        0,
+        0,
+    );
+
+    let buffer = context.create_buffer().ok_or("Failed to create buffer")?;
+    context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buffer));
+
     context.enable_vertex_attrib_array(position_attribute_location as u32);
+    context.vertex_attrib_pointer_with_i32(
+        position_attribute_location as u32,
+        3,
+        WebGl2RenderingContext::FLOAT,
+        false,
+        0,
+        0,
+    );
 
-    context.bind_vertex_array(Some(&vao));
+    context.clear_color(0.0, 0.0, 0.0, 1.0);
+    context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
-    let vert_count = (vertices.len() / 3) as i32;
-    draw(&context, vert_count);
+    set_rectangle(&context, &bitmap);
 
     Ok(())
 }
 
 fn draw(context: &WebGl2RenderingContext, vert_count: i32) {
-    context.clear_color(0.0, 0.0, 0.0, 1.0);
-    context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
-
     context.draw_arrays(WebGl2RenderingContext::TRIANGLES, 0, vert_count);
 }
 

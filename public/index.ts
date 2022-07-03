@@ -1,4 +1,4 @@
-const wasm = import('../gui/pkg/index');
+const wasm = import('../dist-wasm');
 
 wasm.then((m) => {
     m.start()
