@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use terrain::model::pixel::Pixel;
 use terrain::*;
 use wasm_bindgen::prelude::*;
@@ -63,7 +66,7 @@ fn make_triangle_position(x1: f32, x2: f32, y1: f32, y2: f32) -> Vec<f32> {
     vertices
 }
 
-fn set_rectangle(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
+fn set_rectangle(context: WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
     if bitmap.is_empty() {
         return;
     }
@@ -103,8 +106,25 @@ fn set_rectangle(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
         );
 
         let vert_count = (vertices.len() / 3) as i32;
-        draw(&context, vert_count);
+
+        let f = Rc::new(RefCell::new(None));
+        let g = Rc::clone(&f);
+
+        *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+            draw(&context, vert_count);
+
+            request_animation_frame(f.borrow().as_ref().unwrap());
+        }) as Box<dyn FnMut()>));
+
+        request_animation_frame(g.borrow().as_ref().unwrap());
     }
+}
+
+fn request_animation_frame(f: &Closure<dyn FnMut()>) -> () {
+    web_sys::window()
+        .unwrap()
+        .request_animation_frame(f.as_ref().unchecked_ref())
+        .expect("should register `requestAnimationFrame` OK");
 }
 
 #[wasm_bindgen]
@@ -206,7 +226,7 @@ pub fn start() -> Result<(), JsValue> {
     context.clear_color(0.0, 0.0, 0.0, 1.0);
     context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
-    set_rectangle(&context, &bitmap);
+    set_rectangle(context, &bitmap);
 
     Ok(())
 }
