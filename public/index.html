@@ -4,8 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HAHOE</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    #range_wrapper {
+      position: fixed;
+      display: block;
+      top: 15px;
+      right: 15px;
+      padding: 20px;
+      font-weight: 700;
+      background-color: rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      color: #fff;
+    }
+    #range_wrapper > div {
+      display: block;
+      letter-spacing: 5px;
+    }
+  </style>
 </head>
 <body>
+  <section id="range_wrapper">
+    <div>
+      X <input type="range" id="x_range" />
+    </div>
+    <div>
+      Y <input type="range" id="y_range" />
+    </div>
+    <div>
+      Z <input type="range" id="z_range" />
+    </div>
+    <div>
+      D <input type="range" id="d_range" min="1" max="10" />
+    </div>
+  </section>
   <canvas width="800" height="600" id="canvas"></canvas>
 </body>
 </html>
