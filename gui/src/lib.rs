@@ -14,18 +14,43 @@ fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
         return;
     }
 
-    let width = bitmap.len();
-    let height = bitmap[0].len();
+    let width = bitmap.len() - 1;
+    let height = bitmap[0].len() - 1;
     let mut color = Vec::<f32>::with_capacity((width * height * 24) as usize);
 
-    for x in 0..width {
-        for y in 0..height {
-            for _ in 0..6 {
-                color.push(0.0f32);
-                color.push(bitmap[x][y].height as f32);
-                color.push(0.0f32);
-                color.push(1.0f32);
-            }
+    for x in 0..width{
+        for y in 0..height{
+
+            color.push(1.0f32);
+            color.push(bitmap[x][y].height as f32);
+            color.push(0.0f32);
+            color.push(1.0f32);
+
+            color.push(1.0f32);
+            color.push(bitmap[x+1][y].height as f32);
+            color.push(0.0f32);
+            color.push(1.0f32);
+
+            color.push(1.0f32);
+            color.push(bitmap[x][y+1].height as f32);
+            color.push(0.0f32);
+            color.push(1.0f32);
+
+            color.push(1.0f32);
+            color.push(bitmap[x][y+1].height as f32);
+            color.push(0.0f32);
+            color.push(1.0f32);
+
+            color.push(1.0f32);
+            color.push(bitmap[x+1][y].height as f32);
+            color.push(0.0f32);
+            color.push(1.0f32);
+
+            color.push(1.0f32);
+            color.push(bitmap[x+1][y+1].height as f32);
+            color.push(0.0f32);
+            color.push(1.0f32);
+ 
         }
     }
 
@@ -40,26 +65,31 @@ fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
     }
 }
 
-fn make_triangle_position(x1: f32, x2: f32, y1: f32, y2: f32) -> Vec<f32> {
+fn make_triangle_position(x1: f32, x2: f32, y1: f32, y2: f32, h1: f32, h2: f32, h3: f32, h4: f32) -> Vec<f32> {
     let mut vertices = Vec::<f32>::with_capacity(18);
     vertices.push(x1);
     vertices.push(y1);
-    vertices.push(ZERO_HEIGHT);
+    vertices.push(h1);
+
     vertices.push(x2);
     vertices.push(y1);
-    vertices.push(ZERO_HEIGHT);
+    vertices.push(h2);
+
     vertices.push(x1);
     vertices.push(y2);
-    vertices.push(ZERO_HEIGHT);
+    vertices.push(h3);
+
     vertices.push(x1);
     vertices.push(y2);
-    vertices.push(ZERO_HEIGHT);
+    vertices.push(h3);
+
     vertices.push(x2);
     vertices.push(y1);
-    vertices.push(ZERO_HEIGHT);
+    vertices.push(h2);
+
     vertices.push(x2);
     vertices.push(y2);
-    vertices.push(ZERO_HEIGHT);
+    vertices.push(h4);
     vertices
 }
 
@@ -74,22 +104,21 @@ fn set_rectangle(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
     let width = bitmap.len();
     let height = bitmap[0].len();
 
-    let width_ratio = 2. / width as f32;
-    let height_ratio = 2. / height as f32;
+    let width_ratio = 2. / (width - 1) as f32;
+    let height_ratio = 2. / (height - 1) as f32;
 
     let start_width_ratio = -1.;
     let start_height_ratio = -1.;
 
-    let mut vertices = Vec::<f32>::with_capacity((width * height * 18) as usize);
+    let mut vertices = Vec::<f32>::with_capacity(((width - 1) * (height - 1) * 18) as usize);
 
-    for x in 0..width {
-        for y in 0..height {
+    for x in 0..width - 1 {
+        for y in 0..height - 1 {
             let x1 = start_width_ratio + x as f32 * width_ratio;
             let x2 = start_width_ratio + (x + 1) as f32 * width_ratio;
             let y1 = start_height_ratio + y as f32 * height_ratio;
             let y2 = start_height_ratio + (y + 1) as f32 * height_ratio;
-
-            vertices.append(&mut make_triangle_position(x1, x2, y1, y2));
+            vertices.append(&mut make_triangle_position(x1, x2, y1, y2, bitmap[x][y].height as f32, bitmap[x+1][y].height as f32, bitmap[x][y+1].height as f32, bitmap[x+1][y+1].height as f32));
         }
     }
 
