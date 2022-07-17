@@ -5,7 +5,7 @@ use terrain::model::pixel::Pixel;
 use terrain::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader};
+use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
 const ZERO_HEIGHT: f32 = 0.0;
 
@@ -131,16 +131,48 @@ fn keep_repaint(context: WebGl2RenderingContext, vert_count: i32) -> () {
     request_animation_frame(g.borrow().as_ref().unwrap());
 }
 
-#[wasm_bindgen]
-pub fn start() -> Result<(), JsValue> {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+fn get_canvas() -> HtmlCanvasElement {
+    let document = window().unwrap().document().unwrap();
+    let canvas = document
+        .get_element_by_id("canvas")
+        .unwrap()
+        .dyn_into::<HtmlCanvasElement>()
+        .unwrap();
+
+    return canvas;
+}
+
+fn create_canvas() -> HtmlCanvasElement {
+    let document = window().unwrap().document().unwrap();
+    let canvas = document
+        .create_element("canvas")
+        .unwrap()
+        .dyn_into::<HtmlCanvasElement>()
+        .unwrap();
+
+    return canvas;
+}
+
+fn get_context(is_buffer: bool) -> WebGl2RenderingContext {
+    let canvas = if is_buffer {
+        create_canvas()
+    } else {
+        get_canvas()
+    };
 
     let context = canvas
-        .get_context("webgl2")?
+        .get_context("webgl2")
         .unwrap()
-        .dyn_into::<WebGl2RenderingContext>()?;
+        .unwrap()
+        .dyn_into::<WebGl2RenderingContext>()
+        .unwrap();
+
+    return context;
+}
+
+#[wasm_bindgen]
+pub fn start() -> Result<(), JsValue> {
+    let context = get_context(false);
 
     let vert_shader = compile_shader(
         &context,
