@@ -107,16 +107,7 @@ fn set_rectangle(context: WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
 
         let vert_count = (vertices.len() / 3) as i32;
 
-        let f = Rc::new(RefCell::new(None));
-        let g = Rc::clone(&f);
-
-        *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-            draw(&context, vert_count);
-
-            request_animation_frame(f.borrow().as_ref().unwrap());
-        }) as Box<dyn FnMut()>));
-
-        request_animation_frame(g.borrow().as_ref().unwrap());
+        keep_repaint(context, vert_count);
     }
 }
 
@@ -125,6 +116,19 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) -> () {
         .unwrap()
         .request_animation_frame(f.as_ref().unchecked_ref())
         .expect("should register `requestAnimationFrame` OK");
+}
+
+fn keep_repaint(context: WebGl2RenderingContext, vert_count: i32) -> () {
+    let f = Rc::new(RefCell::new(None));
+    let g = Rc::clone(&f);
+
+    *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+        draw(&context, vert_count);
+
+        request_animation_frame(f.borrow().as_ref().unwrap());
+    }) as Box<dyn FnMut()>));
+
+    request_animation_frame(g.borrow().as_ref().unwrap());
 }
 
 #[wasm_bindgen]
