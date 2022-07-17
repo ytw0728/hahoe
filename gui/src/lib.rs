@@ -170,11 +170,15 @@ fn get_context(is_buffer: bool) -> WebGl2RenderingContext {
     return context;
 }
 
-#[wasm_bindgen]
-pub fn start() -> Result<(), JsValue> {
-    let context = get_context(false);
+fn create_shaders(context: &WebGl2RenderingContext) -> (WebGlShader, WebGlShader) {
+    let vertex_shader = create_vertex_shader(context);
+    let fragment_shader = create_fragment_shader(context);
 
-    let vert_shader = compile_shader(
+    return (vertex_shader, fragment_shader);
+}
+
+fn create_vertex_shader(context: &WebGl2RenderingContext) -> WebGlShader {
+    let vertex_shader = compile_shader(
         &context,
         WebGl2RenderingContext::VERTEX_SHADER,
         r##"#version 300 es
@@ -190,9 +194,14 @@ pub fn start() -> Result<(), JsValue> {
             v_color = a_color;
         }
         "##,
-    )?;
+    )
+    .unwrap();
 
-    let frag_shader = compile_shader(
+    return vertex_shader;
+}
+
+fn create_fragment_shader(context: &WebGl2RenderingContext) -> WebGlShader {
+    let fragment_shader = compile_shader(
         &context,
         WebGl2RenderingContext::FRAGMENT_SHADER,
         r##"#version 300 es
@@ -206,9 +215,18 @@ pub fn start() -> Result<(), JsValue> {
             outColor = v_color;
         }
         "##,
-    )?;
+    )
+    .unwrap();
 
-    let program = link_program(&context, &vert_shader, &frag_shader)?;
+    return fragment_shader;
+}
+
+#[wasm_bindgen]
+pub fn start() -> Result<(), JsValue> {
+    let context = get_context(false);
+    let (vertex_shader, fragment_shader) = create_shaders(&context);
+
+    let program = link_program(&context, &vertex_shader, &fragment_shader)?;
     context.use_program(Some(&program));
 
     let color_attribute_location = context.get_attrib_location(&program, "a_color");
@@ -297,15 +315,15 @@ pub fn compile_shader(
 
 pub fn link_program(
     context: &WebGl2RenderingContext,
-    vert_shader: &WebGlShader,
-    frag_shader: &WebGlShader,
+    vertex_shader: &WebGlShader,
+    fragment_shader: &WebGlShader,
 ) -> Result<WebGlProgram, String> {
     let program = context
         .create_program()
         .ok_or_else(|| String::from("Unable to create shader object"))?;
 
-    context.attach_shader(&program, vert_shader);
-    context.attach_shader(&program, frag_shader);
+    context.attach_shader(&program, vertex_shader);
+    context.attach_shader(&program, fragment_shader);
     context.link_program(&program);
 
     if context
