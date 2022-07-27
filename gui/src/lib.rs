@@ -1,15 +1,25 @@
+pub mod camera;
+
 use std::cell::RefCell;
 use std::rc::Rc;
+use camera::Camera;
 use terrain::model::pixel::Pixel;
 use terrain::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader, console, HtmlInputElement};
+use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader, console, HtmlInputElement, WebGlVertexArrayObject, WebGlBuffer};
 use ndarray::{array, Array1};
 use nalgebra::{Matrix4};
 use std::f32;
 
 const ZERO_HEIGHT: f32 = 0.0;
+struct DrawingObject {
+    pub program : WebGlProgram,
+    pub vertex_array: WebGlVertexArrayObject,
+    pub color_buffer_info: WebGlBuffer,
+    pub vertex_buffer_info: WebGlBuffer,
+    pub uniforms: Matrix4<f32>,
+}
 
 fn request_animation_frame(f: &Closure<dyn FnMut()>) -> () {
     web_sys::window()
@@ -53,14 +63,72 @@ fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
             color.push(1.0f32);
 
             color.push(0.2f32);
-            color.push(bitmap[x+1][y].height as f32);
+            color.push(bitmap[x+1][y+1].height as f32);
             color.push(0.2f32);
             color.push(1.0f32);
 
             color.push(0.2f32);
-            color.push(bitmap[x+1][y+1].height as f32);
+            color.push(bitmap[x+1][y].height as f32);
             color.push(0.2f32);
             color.push(1.0f32);
+
+        }
+    }
+
+    unsafe {
+        let color_array_buf_view = js_sys::Float32Array::view(&color);
+
+        context.buffer_data_with_array_buffer_view(
+            WebGl2RenderingContext::ARRAY_BUFFER,
+            &color_array_buf_view,
+            WebGl2RenderingContext::STATIC_DRAW,
+        );
+    }
+}
+
+fn set_color2(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
+    if bitmap.is_empty() {
+        return;
+    }
+    if bitmap[0].is_empty() {
+        return;
+    }
+
+    let width = bitmap.len() - 1;
+    let height = bitmap[0].len() - 1;
+    let mut color = Vec::<f32>::with_capacity((width * height * 24) as usize);
+
+    for x in 0..width{
+        for y in 0..height{
+            color.push(0.2f32);
+            color.push(0.2);
+            color.push(1f32);
+            color.push(0.5f32);
+
+            color.push(0.2f32);
+            color.push(0.2);
+            color.push(1f32);
+            color.push(0.5f32);
+
+            color.push(0.2f32);
+            color.push(0.2);
+            color.push(1f32);
+            color.push(0.5f32);
+
+            color.push(0.2f32);
+            color.push(0.2);
+            color.push(1f32);
+            color.push(0.5f32);
+
+            color.push(0.2f32);
+            color.push(0.2);
+            color.push(1f32);
+            color.push(0.5f32);
+
+            color.push(0.2f32);
+            color.push(0.2);
+            color.push(1f32);
+            color.push(0.5f32);
 
         }
     }
@@ -105,7 +173,87 @@ fn make_triangle_position(x1: f32, x2: f32, y1: f32, y2: f32, h1: f32, h2: f32, 
     vertices
 }
 
-fn set_rectangle(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, program: &WebGlProgram, camera_rad_inputs: &[HtmlInputElement; 4]) {
+fn draw_terrain(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, drawing_object: &DrawingObject) {
+    if bitmap.is_empty() {
+        return;
+    }
+    if bitmap[0].is_empty() {
+        return;
+    }
+
+  //Set Color
+  context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&drawing_object.color_buffer_info));
+  
+  let color_attribute_location = context.get_attrib_location(&drawing_object.program, "a_color");
+  context.enable_vertex_attrib_array(color_attribute_location as u32);
+  context.vertex_attrib_pointer_with_i32(
+      color_attribute_location as u32,
+      4,
+      WebGl2RenderingContext::FLOAT,
+      false,
+      0,
+      0,
+    );
+    
+    set_color(&context, &bitmap);
+
+  context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&drawing_object.vertex_buffer_info));
+  let position_attribute_location = context.get_attrib_location(&drawing_object.program, "a_position");
+  context.enable_vertex_attrib_array(position_attribute_location as u32);
+  context.vertex_attrib_pointer_with_i32(
+      position_attribute_location as u32,
+      3,
+      WebGl2RenderingContext::FLOAT,
+      false,
+      0,
+      0,
+  );
+
+  set_rectangle(&context, &bitmap, &drawing_object);
+
+}
+
+fn draw_water(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, drawing_object: &DrawingObject) {
+    if bitmap.is_empty() {
+        return;
+    }
+    if bitmap[0].is_empty() {
+        return;
+    }
+
+  //Set Color
+  context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&drawing_object.color_buffer_info));
+  
+  let color_attribute_location = context.get_attrib_location(&drawing_object.program, "a_color");
+  context.enable_vertex_attrib_array(color_attribute_location as u32);
+  context.vertex_attrib_pointer_with_i32(
+      color_attribute_location as u32,
+      4,
+      WebGl2RenderingContext::FLOAT,
+      false,
+      0,
+      0,
+    );
+    
+    set_color2(&context, &bitmap);
+
+    context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&drawing_object.vertex_buffer_info));
+    let position_attribute_location = context.get_attrib_location(&drawing_object.program, "a_position");
+    context.enable_vertex_attrib_array(position_attribute_location as u32);
+    context.vertex_attrib_pointer_with_i32(
+        position_attribute_location as u32,
+        3,
+        WebGl2RenderingContext::FLOAT,
+        false,
+        0,
+        0,
+    );
+  
+    set_rectangle(&context, &bitmap, &drawing_object);
+
+}
+
+fn set_rectangle(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, drawing_object: &DrawingObject) {
     if bitmap.is_empty() {
         return;
     }
@@ -124,49 +272,8 @@ fn set_rectangle(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, pro
 
     let mut vertices = Vec::<f32>::with_capacity((width * height * 18) as usize);
 
-    let camera_rads = camera_rad_inputs.clone().map(|node| {
-        let value = node.value();
-        match value.parse::<f32>() {
-            Ok(value) => value,
-            Err(_) => 0.0_32
-        }
-    });
-
-    let x = (camera_rads[0] - 50.0) / 50.0 * 2.0;
-    let y = (camera_rads[1] - 50.0) / 50.0 * 2.0;
-    let z = (camera_rads[2] - 50.0) / 50.0 * 2.0;
-    let d = camera_rads[3];
-
-    let matrix_location = context.get_uniform_location(program, "u_matrix");
-
-    let default = Matrix4::new(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, d,
-    );
-
-    let rotate_x = Matrix4::new(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, x.cos(), -x.sin(), 0.0,
-        0.0, x.sin(), x.cos(), 0.0,
-        0.0, 0.0, 0.0, 1.0,
-    );
-    let rotate_y = Matrix4::new(
-        y.cos(), 0.0, y.sin(), 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        -y.sin(), 0.0, y.cos(), 0.0,
-        0.0, 0.0, 0.0, 1.0,
-    );
-
-    let rotate_z = Matrix4::new(
-        z.cos(), -z.sin(), 0.0, 0.0,
-        z.sin(), z.cos(), 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0,
-    );
-
-    context.uniform_matrix4fv_with_f32_array(matrix_location.as_ref(), false, (&rotate_x * &rotate_y * &rotate_z * &default).as_slice());
+    let matrix_location = context.get_uniform_location(&drawing_object.program, "u_matrix");
+    context.uniform_matrix4fv_with_f32_array(matrix_location.as_ref(), false, drawing_object.uniforms.as_slice());
 
     for x in 0..width {
         for y in 0..height {
@@ -248,13 +355,10 @@ pub fn start() -> Result<(), JsValue> {
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));
 
-    let color_attribute_location = context.get_attrib_location(&program, "a_color");
-    let position_attribute_location = context.get_attrib_location(&program, "a_position");
-
-    let vao = context
+    let terrain_vao = context
         .create_vertex_array()
         .ok_or("Could not create vertex array object")?;
-    context.bind_vertex_array(Some(&vao));
+    context.bind_vertex_array(Some(&terrain_vao));
 
     // Note that `Float32Array::view` is somewhat dangerous (hence the
     // `unsafe`!). This is creating a raw view into our module's
@@ -265,45 +369,52 @@ pub fn start() -> Result<(), JsValue> {
     // As a result, after `Float32Array::view` we have to be very careful not to
     // do any memory allocations before it's dropped.
 
-    //Set Color
-    let color_buffer = context.create_buffer().ok_or("Failed to create buffer")?;
-    context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&color_buffer));
+    context.clear_color(0.0, 0.0, 0.0, 1.0);
+    context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
+    context.enable(WebGl2RenderingContext::BLEND);
+    context.blend_func(WebGl2RenderingContext::SRC_ALPHA, WebGl2RenderingContext::ONE_MINUS_SRC_ALPHA);
+
+    let mut terrain_object = DrawingObject{
+        program : program.clone(),
+        vertex_array : terrain_vao,
+        color_buffer_info : context.create_buffer().ok_or("Failed to create buffer")?,
+        vertex_buffer_info : context.create_buffer().ok_or("Failed to create buffer")?,
+        uniforms : Camera::make_current_matrix()
+    };
+
+    let water_vao = context
+    .create_vertex_array()
+    .ok_or("Could not create vertex array object")?;
+    context.bind_vertex_array(Some(&water_vao));
+
+    let mut water_object = DrawingObject{
+        program : program.clone(),
+        vertex_array : water_vao,
+        color_buffer_info : context.create_buffer().ok_or("Failed to create buffer")?,
+        vertex_buffer_info : context.create_buffer().ok_or("Failed to create buffer")?,
+        uniforms : Camera::make_current_matrix()
+    };
 
     let optbitmap = test_runner1();
     let bitmap = optbitmap.unwrap();
-    set_color(&context, &bitmap);
-
-    context.enable_vertex_attrib_array(color_attribute_location as u32);
-    context.vertex_attrib_pointer_with_i32(
-        color_attribute_location as u32,
-        4,
-        WebGl2RenderingContext::FLOAT,
-        false,
-        0,
-        0,
-    );
-
-    let buffer = context.create_buffer().ok_or("Failed to create buffer")?;
-    context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buffer));
-
-    context.enable_vertex_attrib_array(position_attribute_location as u32);
-    context.vertex_attrib_pointer_with_i32(
-        position_attribute_location as u32,
-        3,
-        WebGl2RenderingContext::FLOAT,
-        false,
-        0,
-        0,
-    );
-
-    context.clear_color(0.0, 0.0, 0.0, 1.0);
-    context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
     let f = Rc::new(RefCell::new(None));
     let g = Rc::clone(&f);
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        set_rectangle(&context, &bitmap, &program, &ranges);
+        terrain_object.uniforms = Camera::make_current_matrix();
+        water_object.uniforms = Camera::make_current_matrix();
+        draw_terrain(&context, &bitmap,  &terrain_object);
+        
+        let mut water_bitmap = (0..2)
+                .map(|_| {
+                    (0..2)
+                        .map(|_| ->  Pixel { Pixel::make_dummy() })
+                        .collect()
+                })
+                .collect();
 
+        draw_water(&context, &water_bitmap, &water_object);
+                
         request_animation_frame(f.borrow().as_ref().unwrap());
     }) as Box<dyn FnMut()>));
 
