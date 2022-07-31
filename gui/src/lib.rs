@@ -371,7 +371,9 @@ pub fn start() -> Result<(), JsValue> {
 
     context.clear_color(0.0, 0.0, 0.0, 1.0);
     context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
+    context.clear(WebGl2RenderingContext::DEPTH_BUFFER_BIT);
     context.enable(WebGl2RenderingContext::BLEND);
+    context.enable(WebGl2RenderingContext::DEPTH_TEST);
     context.blend_func(WebGl2RenderingContext::SRC_ALPHA, WebGl2RenderingContext::ONE_MINUS_SRC_ALPHA);
 
     let mut terrain_object = DrawingObject{
