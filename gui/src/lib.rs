@@ -1,4 +1,5 @@
 pub mod camera;
+pub mod guiobject;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -11,15 +12,9 @@ use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader, console, HtmlIn
 use ndarray::{array, Array1};
 use nalgebra::{Matrix4};
 use std::f32;
+use guiobject::DrawingObject;
 
 const ZERO_HEIGHT: f32 = 0.0;
-struct DrawingObject {
-    pub program : WebGlProgram,
-    pub vertex_array: WebGlVertexArrayObject,
-    pub color_buffer_info: WebGlBuffer,
-    pub vertex_buffer_info: WebGlBuffer,
-    pub uniforms: Matrix4<f32>,
-}
 
 fn request_animation_frame(f: &Closure<dyn FnMut()>) -> () {
     web_sys::window()
@@ -71,64 +66,6 @@ fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
             color.push(bitmap[x+1][y].height as f32);
             color.push(0.2f32);
             color.push(1.0f32);
-
-        }
-    }
-
-    unsafe {
-        let color_array_buf_view = js_sys::Float32Array::view(&color);
-
-        context.buffer_data_with_array_buffer_view(
-            WebGl2RenderingContext::ARRAY_BUFFER,
-            &color_array_buf_view,
-            WebGl2RenderingContext::STATIC_DRAW,
-        );
-    }
-}
-
-fn set_color2(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
-    if bitmap.is_empty() {
-        return;
-    }
-    if bitmap[0].is_empty() {
-        return;
-    }
-
-    let width = bitmap.len() - 1;
-    let height = bitmap[0].len() - 1;
-    let mut color = Vec::<f32>::with_capacity((width * height * 24) as usize);
-
-    for x in 0..width{
-        for y in 0..height{
-            color.push(0.2f32);
-            color.push(0.2);
-            color.push(1f32);
-            color.push(0.5f32);
-
-            color.push(0.2f32);
-            color.push(0.2);
-            color.push(1f32);
-            color.push(0.5f32);
-
-            color.push(0.2f32);
-            color.push(0.2);
-            color.push(1f32);
-            color.push(0.5f32);
-
-            color.push(0.2f32);
-            color.push(0.2);
-            color.push(1f32);
-            color.push(0.5f32);
-
-            color.push(0.2f32);
-            color.push(0.2);
-            color.push(1f32);
-            color.push(0.5f32);
-
-            color.push(0.2f32);
-            color.push(0.2);
-            color.push(1f32);
-            color.push(0.5f32);
 
         }
     }
@@ -214,6 +151,8 @@ fn draw_terrain(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, draw
 }
 
 fn draw_water(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, drawing_object: &DrawingObject) {
+    //입력 파라미터 미정
+    return;
     if bitmap.is_empty() {
         return;
     }
@@ -235,8 +174,6 @@ fn draw_water(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>, drawin
       0,
     );
     
-    set_color2(&context, &bitmap);
-
     context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&drawing_object.vertex_buffer_info));
     let position_attribute_location = context.get_attrib_location(&drawing_object.program, "a_position");
     context.enable_vertex_attrib_array(position_attribute_location as u32);
@@ -404,18 +341,10 @@ pub fn start() -> Result<(), JsValue> {
     let g = Rc::clone(&f);
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         terrain_object.uniforms = Camera::make_current_matrix();
-        water_object.uniforms = Camera::make_current_matrix();
         draw_terrain(&context, &bitmap,  &terrain_object);
         
-        let mut water_bitmap = (0..2)
-                .map(|_| {
-                    (0..2)
-                        .map(|_| ->  Pixel { Pixel::make_dummy() })
-                        .collect()
-                })
-                .collect();
-
-        draw_water(&context, &water_bitmap, &water_object);
+        //water_object.uniforms = Camera::make_current_matrix();
+        //draw_water(&context, &water_bitmap, &water_object);
                 
         request_animation_frame(f.borrow().as_ref().unwrap());
     }) as Box<dyn FnMut()>));
