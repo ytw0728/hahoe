@@ -13,7 +13,7 @@ pub struct Layer {
 impl Layer {
     pub fn make_layer(noise_param: NoiseParam, width: usize, height: usize, scale: f64) -> Layer {
         let mut layer = Layer {
-            noise_param: noise_param,
+            noise_param,
             octave_offsets: Vec::new(),
             perlin: OpenSimplex::new(),
             noise_map: Vec::new(),

@@ -23,36 +23,28 @@ pub fn test_runner1() -> Option<Vec<Vec<Pixel>>> {
 
 pub fn generate_habitality_map() -> Option<Vec<Vec<Habitability>>> {
     let map = test_runner1();
-    if let Some(map) = map {
-        Some(
-            map.iter()
-                .map(|row| {
-                    row.iter()
-                        .map(|pixel| Habitability::interpolate(pixel.height))
-                        .collect()
-                })
-                .collect(),
-        )
-    } else {
-        None
-    }
+    map.map(|map| {
+        map.iter()
+            .map(|row| {
+                row.iter()
+                    .map(|pixel| Habitability::interpolate(pixel.height))
+                    .collect()
+            })
+            .collect()
+    })
 }
 
 pub fn generate_height_map() -> Option<Vec<Vec<Height>>> {
     let map = test_runner1();
     let height_interpolater = Height::interpolater(3f64, 24f64);
 
-    if let Some(map) = map {
-        Some(
-            map.iter()
-                .map(|row| {
-                    row.iter()
-                        .map(|pixel| height_interpolater(pixel.height))
-                        .collect()
-                })
-                .collect(),
-        )
-    } else {
-        None
-    }
+    map.map(|map| {
+        map.iter()
+            .map(|row| {
+                row.iter()
+                    .map(|pixel| height_interpolater(pixel.height))
+                    .collect()
+            })
+            .collect()
+    })
 }
