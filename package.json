@@ -10,7 +10,7 @@
     "serve:web": "yarn exec wait-on dist-wasm && webpack serve --mode=development",
     "watch:wasm": "cargo watch -- yarn build:wasm",
     "build:web": "yarn build:wasm && webpack --mode=production --node-env=production",
-    "build:wasm": "wasm-pack build gui --out-dir ../dist-wasm",
+    "build:wasm": "wasm-pack build core --out-dir ../dist-wasm",
     "watch": "webpack --watch"
   },
   "devDependencies": {
