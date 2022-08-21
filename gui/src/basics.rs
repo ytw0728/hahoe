@@ -1,8 +1,8 @@
-use std::{rc::Rc};
+use std::rc::Rc;
 
 use lazy_static::lazy_static;
-use web_sys::{HtmlCanvasElement, WebGl2RenderingContext, WebGlProgram, HtmlInputElement};
-use wasm_bindgen::{JsValue, JsCast};
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::{HtmlCanvasElement, HtmlInputElement, WebGl2RenderingContext, WebGlProgram};
 
 // TODO: GuiBasics::new를 thread safe하게 변경해 전역 변수 제거해보기.
 lazy_static! {
@@ -20,20 +20,21 @@ pub struct GuiBasics {
 }
 
 impl GuiBasics {
-    pub fn new() -> Self {        
+    pub fn new() -> Self {
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
-        let ranges = [
-            HtmlInputElement::from(JsValue::from(document.get_element_by_id("d_range").unwrap())),
+        let ranges = [HtmlInputElement::from(JsValue::from(
+            document.get_element_by_id("d_range").unwrap(),
+        ))];
         let canvas = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
-    
+
         let context = canvas
             .get_context("webgl2")
             .unwrap()
             .unwrap()
             .dyn_into::<WebGl2RenderingContext>()
             .unwrap();
-    
+
         let program = crate::webgl::program::get_program(&context);
 
         GuiBasics {
