@@ -1,4 +1,7 @@
-use crate::webgl::program::get_vertex_array_object;
+use crate::{
+    dom::{get_canvas, get_document},
+    webgl::program::get_vertex_array_object,
+};
 use lazy_static::lazy_static;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
@@ -8,6 +11,8 @@ use web_sys::{HtmlCanvasElement, HtmlInputElement, WebGl2RenderingContext, WebGl
 lazy_static! {
     pub static ref GUI_BASICS: GuiBasics = GuiBasics::new();
 }
+
+const CANVAS_ID: &str = "canvas";
 
 unsafe impl Send for GuiBasics {}
 unsafe impl Sync for GuiBasics {}
@@ -21,8 +26,9 @@ pub struct GuiBasics {
 
 impl GuiBasics {
     pub fn new() -> Self {
-        let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.get_element_by_id("canvas").unwrap();
+        let document = get_document();
+        let canvas = get_canvas(CANVAS_ID);
+
         let ranges = [
             HtmlInputElement::from(JsValue::from(
                 document.get_element_by_id("x_range").unwrap(),
@@ -37,8 +43,6 @@ impl GuiBasics {
                 document.get_element_by_id("d_range").unwrap(),
             )),
         ];
-        let canvas = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
-
         let context = canvas
             .get_context("webgl2")
             .unwrap()
@@ -47,6 +51,8 @@ impl GuiBasics {
             .unwrap();
 
         let program = crate::webgl::program::get_program(&context);
+        context.use_program(Some(&program));
+
         let vertex_array_object = get_vertex_array_object(&context);
 
         context.bind_vertex_array(Some(&vertex_array_object));
