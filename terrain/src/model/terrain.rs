@@ -20,9 +20,9 @@ pub struct Terrain {
 impl Terrain {
     pub fn make_terrain(width: usize, height: usize, scale: f64) -> Terrain {
         Terrain {
-            width: width,
-            height: height,
-            scale: scale,
+            width,
+            height,
+            scale,
             hash_layer: HashMap::from([(LayerType::Moisture, None), (LayerType::Height, None)]),
             map: (0..width)
                 .map(|_| {
@@ -85,7 +85,7 @@ impl Terrain {
     }
 
     pub fn get_pixel_map(&self) -> Option<Vec<Vec<Pixel>>> {
-        for (_, layer_value) in &self.hash_layer {
+        for layer_value in self.hash_layer.values() {
             if layer_value.is_none() {
                 return None;
             }
@@ -93,6 +93,4 @@ impl Terrain {
 
         Some(self.map.clone())
     }
-
-    // }
 }

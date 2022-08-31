@@ -4,11 +4,7 @@ pub type Habitability = bool;
 
 impl traits::DiscreteAttribute for Habitability {
     fn interpolate(t: f64) -> Self {
-        if t < -0.7 || t > 0.7 {
-            false
-        } else {
-            true
-        }
+        !(-0.7..=0.7).contains(&t)
     }
 }
 
