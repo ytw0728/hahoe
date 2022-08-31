@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc};
 use web_sys::{WebGl2RenderingContext, WebGlShader, WebGlProgram};
 
 pub fn get_program(context: &WebGl2RenderingContext) -> Rc<WebGlProgram> {
