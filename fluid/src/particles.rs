@@ -11,6 +11,7 @@ pub struct Particle {
     pub color: Array1<f32>,
 }
 
+// Properties
 impl Particle {
     pub fn distance_squared(&self, other: &Particle) -> f32 {
         let dp = &self.position - &other.position;
@@ -36,6 +37,12 @@ impl Particle {
     pub fn pressure(&self, others: &[Particle]) -> f32 {
         let density = self.density(others);
         consts::PRESSURE_KAPPA * density
+    }
+
+    pub fn force_gracity(&self) -> Array1<f32> {
+        let mut force = Array1::zeros(3);
+        force[2] = -consts::GRAVITY;
+        force
     }
 
     pub fn force_pressure(&self, others: &[Particle]) -> Array1<f32> {
@@ -67,5 +74,40 @@ impl Particle {
             }
         }
         force * consts::PARTICLE_MASS * consts::VISCOSITY_MU
+    }
+
+    pub fn force_surface_tension(&self, _others: &[Particle]) -> Array1<f32> {
+        // TODO
+        Array1::zeros(3)
+    }
+}
+
+pub struct SimulationStepInput {
+    pub force: Array1<f32>,
+    pub density: f32,
+    pub dt: f32,
+}
+// force and simulation
+impl Particle {
+    pub fn force(&self, others: &[Particle]) -> Array1<f32> {
+        let mut force = self.force_gracity();
+        force = force + self.force_pressure(others);
+        force = force + self.force_viscosity(others);
+        force = force + self.force_surface_tension(others);
+        force
+    }
+
+    // Leapfrog integration
+    // https://en.wikipedia.org/wiki/Leapfrog_integration
+    pub fn integrate(&mut self, input: SimulationStepInput) {
+        // a_i = A(x_i)
+        let acc = input.force / input.density;
+        // v_{i + 1/2} = v_{i - 1/2} +  a_i * dt
+        let vel = &self.velocity + acc * input.dt / 2.0;
+        // x_{i + 1} = x_{i} + v_{i + 1/2} * dt
+        let pos = &self.position + &vel * input.dt;
+
+        self.velocity = vel;
+        self.position = pos;
     }
 }
