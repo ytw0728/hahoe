@@ -82,8 +82,8 @@ impl Particle {
     }
 }
 
-pub struct SimulationStepInput {
-    pub force: Array1<f32>,
+pub struct SimulationStepInput<'a> {
+    pub force: &'a Array1<f32>,
     pub density: f32,
     pub dt: f32,
 }
@@ -99,7 +99,7 @@ impl Particle {
 
     // Leapfrog integration
     // https://en.wikipedia.org/wiki/Leapfrog_integration
-    pub fn integrate(&mut self, input: SimulationStepInput) {
+    pub fn tick(&mut self, input: SimulationStepInput) {
         // a_i = A(x_i)
         let acc = input.force / input.density;
         // v_{i + 1/2} = v_{i - 1/2} +  a_i * dt

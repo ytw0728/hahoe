@@ -1,5 +1,6 @@
 mod consts;
 pub mod kernels;
+pub mod particle_system;
 pub mod particles;
 #[cfg(test)]
 mod tests {
