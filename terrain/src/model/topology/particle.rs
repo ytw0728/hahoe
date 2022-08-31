@@ -13,7 +13,7 @@ impl Particle {
             position : Point3D::new(0 as f64,0 as f64,0 as f64)
         }
     }
-    pub fn new_Point3D(point3d : &Point3D) -> Self {
+    pub fn new_point3d(point3d : &Point3D) -> Self {
         let mut this = Particle::new();
         this.position = point3d.clone();
         this
