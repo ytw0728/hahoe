@@ -4,3 +4,5 @@ node_modules
 dist
 dist-wasm
 target 
+
+.DS_Store

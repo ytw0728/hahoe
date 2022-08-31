@@ -1,6 +1,7 @@
 mod resources;
 mod components;
 mod systems;
+mod combinations;
 
 use gui;
 use terrain;
