@@ -1,5 +1,5 @@
 const wasm = import('../dist-wasm');
 
 wasm.then((m) => {
-    m.start()
+    m.main()
 }).catch(console.error);
