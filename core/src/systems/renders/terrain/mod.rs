@@ -25,6 +25,25 @@ impl<'a> System<'a> for RenderTerrainSystem {
                 &GUI_BASICS.program,
                 &GUI_BASICS.ranges,
             );
+            let gui::GuiBasics {
+                canvas: _,
+                program,
+                ranges,
+                context,
+            } = self.basics.as_ref();
+
+            gui::webgl::buffer::init::bind_color_buffer(context, program);
+            let color_buffer_data =
+                gui::webgl::buffer::update::get_color_buffer_data(&terrain.bitmap);
+            gui::webgl::buffer::update::fill_buffer_data(context, &color_buffer_data);
+
+            gui::webgl::buffer::init::bind_vertex_buffer(context, program);
+            let rectangle_array_buffer =
+                gui::webgl::buffer::update::get_rectangle_array_buffer(&terrain.bitmap);
+            gui::webgl::buffer::update::fill_buffer_data(context, &rectangle_array_buffer);
+
+            gui::webgl::buffer::update::set_uniform_matrix(context, program, ranges);
+            gui::webgl::draw(context, (rectangle_array_buffer.len() / 3) as i32);
         }
     }
 }
