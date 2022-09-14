@@ -39,7 +39,7 @@ impl Particle {
         consts::PRESSURE_KAPPA * density
     }
 
-    pub fn force_gracity(&self) -> Array1<f32> {
+    pub fn force_gravity(&self) -> Array1<f32> {
         let mut force = Array1::zeros(3);
         force[2] = -consts::GRAVITY;
         force
@@ -47,7 +47,7 @@ impl Particle {
 
     pub fn force_pressure(&self, others: &[Particle]) -> Array1<f32> {
         let mut force = Array1::<f32>::zeros(3);
-        let p_i = self.density(others);
+        let p_i = self.pressure(others);
         for other in others {
             let distance_squared = self.distance_squared(other);
             if distance_squared < consts::DISTANCE_LIMIT_SQUARED {
@@ -90,7 +90,7 @@ pub struct SimulationStepInput<'a> {
 // force and simulation
 impl Particle {
     pub fn force(&self, others: &[Particle]) -> Array1<f32> {
-        let mut force = self.force_gracity();
+        let mut force = self.force_gravity();
         force = force + self.force_pressure(others);
         force = force + self.force_viscosity(others);
         force = force + self.force_surface_tension(others);

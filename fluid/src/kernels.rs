@@ -23,7 +23,7 @@ pub fn grad_spiky(r1: &Array1<f32>, r2: &Array1<f32>) -> Array1<f32> {
     let dr = r1 - r2;
     let distance = dr.dot(&dr).sqrt();
     let magic_number = -45.0 / PI / consts::DISTANCE_LIMIT.powi(6);
-    let nominator = (consts::DISTANCE_LIMIT - distance).powi(2) * magic_number;
+    let nominator = (consts::DISTANCE_LIMIT - distance).powi(2);
     magic_number * nominator / distance * dr
 }
 
