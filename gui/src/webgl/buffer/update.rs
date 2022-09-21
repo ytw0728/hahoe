@@ -82,9 +82,9 @@ pub fn set_rectangle(context: &WebGl2RenderingContext, mesh: &Mesh, program: &We
     let matrix_location = context.get_uniform_location(program, "u_matrix");
 
     let default = Matrix4::new(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
+        -1.0, 0.0, 0.0, 0.0,
+        0.0, -1.0, 0.0, 0.0,
+        0.0, 0.0, -1.0, 0.0,
         0.0, 0.0, 0.0, d,
     );
 
