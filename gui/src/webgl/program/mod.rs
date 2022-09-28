@@ -42,10 +42,10 @@ pub fn get_program(context: &WebGl2RenderingContext) -> Rc<WebGlProgram> {
   
         // normal과 뒤집어진 빛의 방향을 내적해서 light값을 계산합니다.
         float light = dot(normal, normalizeDirection);
- 
+        light *= 0.6;
+        light += 0.4; //(normalize 1.0 ~ 0.0 to 1.0 ~ 0.4)
         // 알파를 제외한 색상값 부분을 light값과 곱해줍니다.
-        outColor.rgb *= light * 0.6; 
-        outColor.rgb += 0.4; //(normalize 1.0 ~ 0.0 to 1.0 ~ 0.4)
+        outColor.rgb *= light; 
         }
         "##,
     ).unwrap();
