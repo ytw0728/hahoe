@@ -7,6 +7,9 @@ use terrain::Mesh;
 use rust_3d::*;
 
 pub fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
+
+    //지형별 색상 setting 전까진 deprecated
+
     if bitmap.is_empty() {
         return;
     }
