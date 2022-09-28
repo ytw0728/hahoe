@@ -40,24 +40,31 @@ pub fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
     }
 }
 
-pub fn set_rectangle(context: &WebGl2RenderingContext, mesh: &Mesh, bitmap: &Vec<Vec<Pixel>>, program: &WebGlProgram, camera_rad_inputs: &[HtmlInputElement; 4]) {
-    if bitmap.is_empty() {
-        return;
-    }
-    if bitmap[0].is_empty() {
+pub fn set_rectangle(context: &WebGl2RenderingContext, mesh: &Mesh, program: &WebGlProgram, camera_rad_inputs: &[HtmlInputElement; 4]) {
+    if mesh.num_faces() == 0 {
         return;
     }
 
-    let width = bitmap.len() - 1;
-    let height = bitmap[0].len() - 1;
+    // reasonable defaults?
+    let mut width_ratio = 1f32;
+    let mut height_ratio = 1f32;
 
-    let width_ratio = 2. / width as f32;
-    let height_ratio = 2. / height as f32;
+    let start_width_ratio = -1f32;
+    let start_height_ratio = -1f32;    
 
-    let start_width_ratio = -1.;
-    let start_height_ratio = -1.;
+    
 
-    let mut vertices = Vec::<f32>::with_capacity((width * height * 18) as usize);
+    if let Ok(bounding_box) = mesh.bounding_box_maybe() {
+        let max = bounding_box.max_p();
+        let min = bounding_box.min_p();
+        let width = max.x - min.x;
+        let height = max.y - min.y;
+
+        width_ratio = 2. / width as f32;
+        height_ratio = 2. / height as f32;
+    }
+
+    let mut vertices: Vec<f32> = Vec::with_capacity(mesh.num_faces() * 9);
 
     let camera_rads = camera_rad_inputs.clone().map(|node| {
         let value = node.value();
