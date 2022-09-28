@@ -10,3 +10,4 @@ noise = "0.7"
 csv = "1.1"
 rand = "0.8"
 getrandom = { version = "0.2", features = ["js"] }
+rust-3d="0.34"
