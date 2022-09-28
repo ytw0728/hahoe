@@ -5,6 +5,12 @@ use model::terrain::Terrain;
 
 pub mod model;
 
+pub mod gen;
+
+pub use rust_3d::*;
+
+pub use gen::*;
+
 pub fn test_runner1() -> Option<Vec<Vec<Pixel>>> {
     const WIDTH: usize = 100;
     const HEIGHT: usize = 100;
