@@ -8,6 +8,12 @@
     * {
       margin: 0;
       padding: 0;
+      transition: all .5s ease;
+    }
+    :root {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
     }
     canvas {
       width: 100vw;
@@ -22,11 +28,68 @@
       font-weight: 700;
       background-color: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
-      color: #fff;
     }
     #range_wrapper > div {
       display: block;
       letter-spacing: 5px;
+    }
+
+    #widget_wrapper {
+      position: fixed;
+      display: block;
+      bottom: 15px;
+      right: 15px;
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: 25px;
+      color: #fff;
+      width: 50px;
+      height: 50px;
+      overflow: hidden;
+    }
+    #widget_wrapper > * {
+      opacity: 0;
+    }
+    #widget_wrapper:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      width: 200px;
+      height: 200px;
+    }
+    #widget_wrapper:hover > * {
+      opacity: 1;
+    }
+
+    #widget_box {
+      background-color: rgba(255, 255, 255, 0.1);
+      margin: 10px 0;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .widgets {
+      display: inline-block;
+      min-width: 25px;
+      min-height: 25px;
+      border-radius: 12.5px;
+      padding: 0;
+      line-height: 25px;
+      white-space: nowrap;
+      cursor: pointer;
+      overflow: hidden;
+      font-size: 0;
+      text-align: center;
+    }
+    .widgets:hover {
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    #widget_box > .widgets:nth-of-type(1) {
+      background-color: rgba(150, 150, 255, 1);
+    }
+    #widget_box > .widgets:nth-of-type(2) {
+      background-color: rgba(150, 150, 255, .8);
+    }
+    #widget_box > .widgets:nth-of-type(3) {
+      background-color: rgba(150, 150, 255, .6);
     }
   </style>
 </head>
@@ -43,6 +106,23 @@
     </div>
     <div>
       D <input type="range" id="d_range" min="1" max="10" />
+    </div>
+  </section>
+  <section id="widget_wrapper">
+    <div>
+      <h3>지형</h3>
+      <div id="widget_box">
+        <span id="cutting" class="widgets" title="파기">땅 파기</span>
+        <span id="banking" class="widgets" title="올리기">땅 올리기</span>
+        <span id="flattening" class="widgets" title="평탄화">평탄화</span>
+      </div>
+    </div>
+    <div>
+      <h3>요소</h3>
+      <div id="widget_box">
+        <span id="water" class="widgets" title="물">물</span>
+        <span id="human" class="widgets" title="사람">사람</span>
+      </div>
     </div>
   </section>
   <canvas width="800" height="600" id="canvas"></canvas>
