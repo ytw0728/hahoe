@@ -271,6 +271,7 @@ dependencies = [
  "lazy_static",
  "nalgebra",
  "ndarray",
+ "rust-3d",
  "serde",
  "terrain",
  "wasm-bindgen",
