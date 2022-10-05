@@ -43,44 +43,21 @@ pub fn set_color(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
     }
 }
 
-pub fn set_normal(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
-    if bitmap.is_empty() {
-        return;
-    }
-    if bitmap[0].is_empty() {
+pub fn set_normal(context: &WebGl2RenderingContext, mesh: &Mesh) {
+    if mesh.num_faces() == 0 {
         return;
     }
 
-    let width = bitmap.len() - 1;
-    let height = bitmap[0].len() - 1;
+    let mut normals = Vec::<f32>::with_capacity(mesh.num_faces() * 9);
 
-    let width_ratio = 2. / width as f32;
-    let height_ratio = 2. / height as f32;
-
-    let start_width_ratio = -1.;
-    let start_height_ratio = -1.;
-
-    let mut normals = Vec::<f32>::with_capacity((width * height * 18) as usize);
-
-    for x in 0..width {
-        for y in 0..height {
-            let x1 = start_width_ratio + x as f32 * width_ratio;
-            let x2 = start_width_ratio + (x + 1) as f32 * width_ratio;
-            let y1 = start_height_ratio + y as f32 * height_ratio;
-            let y2 = start_height_ratio + (y + 1) as f32 * height_ratio;
-
-            normals.append(
-                &mut make_triangle_normals(
-                    x1, x2, y1, y2,
-                    bitmap[x][y].height as f32,
-                    bitmap[x+1][y].height as f32,
-                    bitmap[x][y+1].height as f32,
-                    bitmap[x+1][y+1].height as f32
-                )
-            );
+    //normal 보간은 일단 생략
+    for face_id in 0..mesh.num_faces() {
+        if let Ok(normal) = mesh.face_normal(FId{ val: face_id}) {
+            for _ in 0..3 { //삼각형 꼭짓점의 normal 각각
+                normals.append(&mut normal.xyz().iter().map(|n| *n as f32).collect());
+            }
         }
     }
-  
 
     unsafe {
         let normal_array_buf_view = js_sys::Float32Array::view(&normals);
@@ -91,34 +68,6 @@ pub fn set_normal(context: &WebGl2RenderingContext, bitmap: &Vec<Vec<Pixel>>) {
             WebGl2RenderingContext::STATIC_DRAW,
         );
     }
-}
-
-fn make_triangle_normals(x1: f32, x2: f32, y1: f32, y2: f32, h1: f32, h2: f32, h3: f32, h4: f32) -> Vec<f32> {
-    let mut normals = Vec::<f32>::with_capacity(18);
-
-    let first_direction = Vector3::new(x2 - x1, y1 - y1, h2 - h1);
-    let second_direction = Vector3::new(x1 - x1, y2 - y1, h3 - h1);
-    let first_normal = first_direction.cross(&second_direction);
-
-    for _ in 0..3
-    {
-        normals.push(first_normal.x);
-        normals.push(first_normal.y);
-        normals.push(first_normal.z);
-    }
-
-    let first_direction = Vector3::new(x2 - x1, y1 - y2, h2 - h3);
-    let second_direction = Vector3::new(x2 - x1, y2 - y2, h4 - h3);
-    let second_normal = first_direction.cross(&second_direction);
-
-    for _ in 0..3
-    {
-        normals.push(second_normal.x);
-        normals.push(second_normal.y);
-        normals.push(second_normal.z);
-    }
-
-    normals
 }
 
 pub fn set_rectangle(context: &WebGl2RenderingContext, mesh: &Mesh, program: &WebGlProgram, camera_rad_inputs: &[HtmlInputElement; 4]) {

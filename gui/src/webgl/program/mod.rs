@@ -38,12 +38,10 @@ pub fn get_program(context: &WebGl2RenderingContext) -> Rc<WebGlProgram> {
           outColor = vec4(0.2, 1.0, 0.2, 1.0);  //terrain 색상 지정 전까진 초록색 하드코딩
           vec3 normal = normalize(v_normal);
   
-          vec3 normalizeDirection = normalize(vec3(0.5, 0.7, 1));
+          vec3 normalizeDirection = normalize(vec3(0.5, 0.7, 0));
   
         // normal과 뒤집어진 빛의 방향을 내적해서 light값을 계산합니다.
         float light = dot(normal, normalizeDirection);
-        light *= 0.6;
-        light += 0.4; //(normalize 1.0 ~ 0.0 to 1.0 ~ 0.4)
         // 알파를 제외한 색상값 부분을 light값과 곱해줍니다.
         outColor.rgb *= light; 
         }
