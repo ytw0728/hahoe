@@ -26,3 +26,11 @@ impl Range for animal {
         )
     }
 }
+
+impl<i32> location <i32> for animal {
+    type Error = ();
+    fn location_change(&self, dir : [i32; 3]) -> Result<_, Error>{
+        //Location Change
+        ();
+    }
+}
