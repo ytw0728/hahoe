@@ -1,5 +1,6 @@
 use std::rc::Rc;
-use web_sys::{WebGl2RenderingContext, WebGlShader, WebGlProgram};
+
+use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
 pub fn get_program(context: &WebGl2RenderingContext) -> Rc<WebGlProgram> {
     let vert_shader = crate::webgl::shader::compile_shader(
@@ -18,7 +19,8 @@ pub fn get_program(context: &WebGl2RenderingContext) -> Rc<WebGlProgram> {
           v_color = a_color;
         }
         "##,
-    ).unwrap();
+    )
+    .unwrap();
 
     let frag_shader = crate::webgl::shader::compile_shader(
         &context,
@@ -33,19 +35,20 @@ pub fn get_program(context: &WebGl2RenderingContext) -> Rc<WebGlProgram> {
           outColor = v_color;
         }
         "##,
-    ).unwrap();
+    )
+    .unwrap();
 
     let program = link_program(&context, &vert_shader, &frag_shader).unwrap();
     context.use_program(Some(&program));
 
     let vao = context
         .create_vertex_array()
-        .ok_or("Could not create vertex array object").unwrap();
+        .ok_or("Could not create vertex array object")
+        .unwrap();
     context.bind_vertex_array(Some(&vao));
-    
+
     Rc::new(program)
 }
-
 
 fn link_program(
     context: &WebGl2RenderingContext,
