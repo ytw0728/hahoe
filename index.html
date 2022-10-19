@@ -1,0 +1,15 @@
+<html>
+<body>
+    <form action="/add-item" method="post" class="form-class">
+        <추가할 아이템 이름> :<input id="name"><button id="clear" type="button">삭제</button>
+        <button type="submit">서버에 추가하기</button>
+    </form>
+
+    <script>
+    document.querySelector('#clear').addEventListener('click', (e) => {
+        console.log('call')
+        document.querySelector('#name').value = ''
+    })
+    </script>
+</body>
+</html>

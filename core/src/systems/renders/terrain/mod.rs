@@ -1,19 +1,15 @@
 use gui::basics::GUI_BASICS;
-use gui::dom::{get_canvas, get_document};
+use gui::dom::get_document;
 use gui::webgl::buffer::init::{
     BufferDataFiller, BufferDataMaker, ColorBufferDataFiller, ColorBufferDataMaker,
     RectangleBufferDataMaker,
 };
-use gui::webgl::program::get_program;
 use specs::{Read, ReadStorage, System};
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{HtmlCanvasElement, HtmlInputElement, WebGl2RenderingContext, WebGlProgram};
-
 use std::rc::Rc;
+use wasm_bindgen::JsValue;
+use web_sys::HtmlInputElement;
 
 pub struct RenderTerrainSystem;
-
-const CANVAS_ID: &str = "canvas";
 
 impl<'a> System<'a> for RenderTerrainSystem {
     // TODO: resource (time) 사용법 전달드리고 나면, 제거하기 (여기선 필요없음.)
@@ -25,24 +21,9 @@ impl<'a> System<'a> for RenderTerrainSystem {
         use specs::Join;
         // MEMO: resource는 이렇게 쓰면 됩니다.
         let (time, terrain) = data;
+        let document = get_document();
 
         for terrain in terrain.join() {
-            gui::webgl::buffer::init::bind_color_buffer(&GUI_BASICS.context, &GUI_BASICS.program);
-            gui::webgl::buffer::update::set_color(&GUI_BASICS.context, &terrain.bitmap);
-            gui::webgl::buffer::init::bind_vertex_buffer(&GUI_BASICS.context, &GUI_BASICS.program);
-            gui::webgl::buffer::update::set_rectangle(
-                &GUI_BASICS.context,
-                &terrain.bitmap,
-                &GUI_BASICS.program,
-                &GUI_BASICS.ranges,
-            );
-            let gui::GuiBasics {
-                canvas: _,
-                program,
-                ranges,
-            let document = get_document();
-            let canvas = get_canvas(CANVAS_ID);
-
             let ranges = [
                 HtmlInputElement::from(JsValue::from(
                     document.get_element_by_id("x_range").unwrap(),
@@ -58,24 +39,17 @@ impl<'a> System<'a> for RenderTerrainSystem {
                 )),
             ];
 
-            let context = Rc::new(
-                canvas
-                    .get_context("webgl2")
-                    .unwrap()
-                    .unwrap()
-                    .dyn_into::<WebGl2RenderingContext>()
-                    .unwrap(),
-            );
-            let program = Rc::new(get_program(&Rc::clone(&context)));
-            context.use_program(Some(&program));
+            GUI_BASICS
+                .context
+                .use_program(Some(&Rc::clone(&GUI_BASICS.program)));
             let colorBufferDataMaker = ColorBufferDataMaker {
-                context: Rc::clone(&context),
-                program: Rc::clone(&program),
+                context: Rc::clone(&GUI_BASICS.context),
+                program: Rc::clone(&GUI_BASICS.program),
             };
             let colorBufferData = colorBufferDataMaker.make_buffer_data(&terrain.bitmap);
-            let colorBufferDataFiller = gui::webgl::buffer::init::ColorBufferDataFiller {
-                context: Rc::clone(&context),
-                program: Rc::clone(&program),
+            let colorBufferDataFiller = ColorBufferDataFiller {
+                context: Rc::clone(&GUI_BASICS.context),
+                program: Rc::clone(&GUI_BASICS.program),
                 buffer_data: Some(colorBufferData),
             };
 
@@ -83,14 +57,14 @@ impl<'a> System<'a> for RenderTerrainSystem {
             colorBufferDataFiller.fill_with_buffer_data();
 
             let rectangleBufferDataMaker = RectangleBufferDataMaker {
-                context: Rc::clone(&context),
-                program: Rc::clone(&program),
+                context: Rc::clone(&GUI_BASICS.context),
+                program: Rc::clone(&GUI_BASICS.program),
             };
             let rectangleBufferData = rectangleBufferDataMaker.make_buffer_data(&terrain.bitmap);
             let rectangleBufferDataLength = rectangleBufferData.len();
             let rectangleBufferDataFiller = gui::webgl::buffer::init::RectangleBufferDataFiller {
-                context: Rc::clone(&context),
-                program: Rc::clone(&program),
+                context: Rc::clone(&GUI_BASICS.context),
+                program: Rc::clone(&GUI_BASICS.program),
                 buffer_data: Some(rectangleBufferData),
             };
 
@@ -98,11 +72,11 @@ impl<'a> System<'a> for RenderTerrainSystem {
             rectangleBufferDataFiller.fill_with_buffer_data();
 
             gui::webgl::buffer::update::set_uniform_matrix(
-                &Rc::clone(&context),
-                &Rc::clone(&program),
+                &GUI_BASICS.context,
+                &Rc::clone(&GUI_BASICS.program),
                 &ranges,
             );
-            gui::webgl::draw(&Rc::clone(&context), (rectangleBufferDataLength / 3) as i32);
+            gui::webgl::draw(&GUI_BASICS.context, (rectangleBufferDataLength / 3) as i32);
         }
     }
 }

@@ -1,5 +1,7 @@
-const wasm = import('../dist-wasm');
+const wasm = import("../dist-wasm");
 
-wasm.then((m) => {
-    m.main()
-}).catch(console.error);
+wasm
+  .then((m) => {
+    m.main();
+  })
+  .catch(console.error);
