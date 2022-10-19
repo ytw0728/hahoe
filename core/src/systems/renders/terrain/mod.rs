@@ -1,8 +1,15 @@
+use std::{sync::{Arc, Mutex}, borrow::Borrow};
+
 use gui::basics::GUI_BASICS;
 use specs::{Read, ReadStorage, System};
+use wasm_bindgen::JsValue;
+use web_sys::console;
 
-pub struct RenderTerrainSystem;
+use crate::{utils::store::Store, combinations::terrain::{MyState, Msg}};
 
+pub struct RenderTerrainSystem {
+    pub store: Arc<Mutex<Store<MyState, Msg>>>
+}
 
 impl<'a> System<'a> for RenderTerrainSystem {
     // TODO: resource (time) 사용법 전달드리고 나면, 제거하기 (여기선 필요없음.)
@@ -11,6 +18,10 @@ impl<'a> System<'a> for RenderTerrainSystem {
         use specs::Join;
         // MEMO: resource는 이렇게 쓰면 됩니다.
         let (time,  terrain) = data;
+        let mut locked_store = self.store.lock().unwrap();
+        console::log_1(&JsValue::from_f64(f64::from(locked_store.view().count)));
+        // locked_store.dispatch(Msg::TryAdd);
+        
 
         for terrain in terrain.join() {
             gui::webgl::buffer::init::bind_color_buffer(&GUI_BASICS.context, &GUI_BASICS.program);

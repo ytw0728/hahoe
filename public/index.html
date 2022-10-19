@@ -15,6 +15,9 @@
       font-size: 14px;
       font-weight: 700;
     }
+    body {
+      overflow: hidden;
+    }
     canvas {
       width: 100vw;
       height: 100vh;
@@ -44,7 +47,7 @@
       color: #fff;
       width: 50px;
       height: 50px;
-      overflow: auto;
+      overflow: hidden;
     }
     #widget_wrapper > * {
       opacity: 0;
@@ -54,7 +57,12 @@
       padding: 20px;
       width: 200px;
       height: 200px;
+      overflow: auto;
     }
+    #widget_wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
     #widget_wrapper:hover > * {
       opacity: 1;
     }

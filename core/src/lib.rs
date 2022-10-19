@@ -2,6 +2,7 @@ mod resources;
 mod components;
 mod systems;
 mod combinations;
+mod utils;
 
 use combinations::Combination;
 use combinations::terrain::TerrainCombination;
