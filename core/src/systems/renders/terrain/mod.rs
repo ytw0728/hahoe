@@ -15,8 +15,10 @@ impl<'a> System<'a> for RenderTerrainSystem {
         for terrain in terrain.join() {
             gui::webgl::buffer::init::bind_color_buffer(&GUI_BASICS.context, &GUI_BASICS.program);
             gui::webgl::buffer::update::set_color(&GUI_BASICS.context, &terrain.bitmap);
+            gui::webgl::buffer::init::bind_normal_buffer(&GUI_BASICS.context, &GUI_BASICS.program);
+            gui::webgl::buffer::update::set_normal(&GUI_BASICS.context, &terrain.mesh);
             gui::webgl::buffer::init::bind_vertex_buffer(&GUI_BASICS.context, &GUI_BASICS.program);
-            gui::webgl::buffer::update::set_rectangle(&GUI_BASICS.context, &terrain.bitmap, &GUI_BASICS.program, &GUI_BASICS.ranges);
+            gui::webgl::buffer::update::set_rectangle(&GUI_BASICS.context, &terrain.mesh,  &GUI_BASICS.program, &GUI_BASICS.ranges);
         }
     }
 }

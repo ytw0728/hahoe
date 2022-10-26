@@ -11,6 +11,6 @@ pub fn draw(context: &WebGl2RenderingContext, vert_count: i32) {
 }
 
 pub fn clear(context: &WebGl2RenderingContext) {
-    context.clear_color(0.0, 0.0, 0.0, 1.0);
+    context.clear_color(1.0, 1.0, 1.0, 1.0);
     context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 }

@@ -29,3 +29,18 @@ pub fn bind_vertex_buffer(context: &WebGl2RenderingContext, program:&WebGlProgra
         0,
     );
 }
+
+pub fn bind_normal_buffer(context: &WebGl2RenderingContext, program:&WebGlProgram) {
+    let buffer = context.create_buffer().ok_or("Failed to create buffer").unwrap();
+    context.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buffer));
+    let normal_attribute_location = context.get_attrib_location(&program, "a_normal");
+    context.enable_vertex_attrib_array(normal_attribute_location as u32);
+    context.vertex_attrib_pointer_with_i32(
+        normal_attribute_location as u32,
+        3,
+        WebGl2RenderingContext::FLOAT,
+        false,
+        0,
+        0,
+    );
+}
