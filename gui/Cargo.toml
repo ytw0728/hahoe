@@ -19,6 +19,7 @@ version = "0.3.4"
 features = [
   'Document',
   'Element',
+  'NodeList',
   'CssStyleDeclaration',
   'HtmlCanvasElement',
   'HtmlInputElement',
@@ -29,5 +30,7 @@ features = [
   'WebGlShader',
   'WebGlUniformLocation',
   'Window',
+  'Event',
+  'PointerEvent',
   'console'
 ]
