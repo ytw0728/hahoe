@@ -117,7 +117,7 @@ pub fn set_rectangle(context: &WebGl2RenderingContext, mesh: &Mesh, program: &We
                 let y = start_height_ratio + point.y as f32 * height_ratio;
                 vertices.push(x);
                 vertices.push(y);
-                vertices.push(point.z as f32);
+                vertices.push(point.height as f32);
             }
         }
     }

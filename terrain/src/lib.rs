@@ -3,6 +3,7 @@ use model::noise_param::NoiseParam;
 use model::pixel::Pixel;
 use model::terrain::Terrain;
 
+pub mod data_structures;
 pub mod model;
 
 pub mod gen;

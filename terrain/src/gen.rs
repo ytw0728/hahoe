@@ -1,3 +1,4 @@
+use crate::data_structures::Pixel3D;
 use crate::model;
 use model::noise_param::*;
 use model::pixel::*;
@@ -10,7 +11,7 @@ pub enum Result<T> {
     Err(String),
 }
 
-pub type Mesh = Mesh3D<Point3D, PointCloud3D<Point3D>, Vec<usize>>;
+pub type Mesh = Mesh3D<Pixel3D, PointCloud3D<Pixel3D>, Vec<usize>>;
 
 pub fn gen_bitmap() -> Option<Vec<Vec<Pixel>>> {
     const WIDTH: usize = 100;
@@ -38,8 +39,7 @@ pub fn gen_mesh() -> Option<Mesh> {
             for (c, pixel) in row.iter().enumerate() {
                 let x = r as f64;
                 let y = c as f64;
-                let z = pixel.height;
-                mesh.add_vertex(Point3D::new(x, y, z));
+                mesh.add_vertex(Pixel3D::new(x, y, &pixel));
             }
         }
         for r in 0..width - 1 {
