@@ -12,20 +12,12 @@ pub trait BufferDataMaker {
         return Vec::<T>::with_capacity(width * height * size);
     }
 }
-pub trait BufferDataFiller {
-    fn bind_buffer(&self);
 
-    fn fill_with_buffer_data(&self);
-}
-
-pub struct ColorBufferDataMaker {
-    pub context: Rc<WebGl2RenderingContext>,
-    pub program: Rc<WebGlProgram>,
-}
+pub struct ColorBufferDataMaker {}
 
 impl ColorBufferDataMaker {
-    pub fn new(context: Rc<WebGl2RenderingContext>, program: Rc<WebGlProgram>) -> Self {
-        ColorBufferDataMaker { context, program }
+    pub fn new() -> Self {
+        ColorBufferDataMaker {}
     }
 }
 
@@ -68,71 +60,11 @@ impl BufferDataMaker for ColorBufferDataMaker {
     }
 }
 
-pub struct ColorBufferDataFiller {
-    pub context: Rc<WebGl2RenderingContext>,
-    pub program: Rc<WebGlProgram>,
-    pub buffer_data: Option<Vec<f32>>,
-}
-
-impl ColorBufferDataFiller {
-    pub fn new(
-        context: Rc<WebGl2RenderingContext>,
-        program: Rc<WebGlProgram>,
-        buffer_data: Option<Vec<f32>>,
-    ) -> Self {
-        ColorBufferDataFiller {
-            context,
-            program,
-            buffer_data,
-        }
-    }
-}
-
-impl BufferDataFiller for ColorBufferDataFiller {
-    fn bind_buffer(&self) {
-        let buffer = self
-            .context
-            .create_buffer()
-            .ok_or("Failed to create buffer")
-            .unwrap();
-        self.context
-            .bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buffer));
-
-        let attribute_location = self.context.get_attrib_location(&self.program, "a_color");
-
-        self.context
-            .enable_vertex_attrib_array(attribute_location as u32);
-        self.context.vertex_attrib_pointer_with_i32(
-            attribute_location as u32,
-            4,
-            WebGl2RenderingContext::FLOAT,
-            false,
-            0,
-            0,
-        );
-    }
-
-    fn fill_with_buffer_data(&self) {
-        unsafe {
-            let array_buffer_view = js_sys::Float32Array::view(self.buffer_data.as_ref().unwrap());
-
-            self.context.buffer_data_with_array_buffer_view(
-                WebGl2RenderingContext::ARRAY_BUFFER,
-                &array_buffer_view,
-                WebGl2RenderingContext::STATIC_DRAW,
-            );
-        }
-    }
-}
-
-pub struct RectangleBufferDataMaker {
-    pub context: Rc<WebGl2RenderingContext>,
-    pub program: Rc<WebGlProgram>,
-}
+pub struct RectangleBufferDataMaker {}
 
 impl RectangleBufferDataMaker {
     pub fn new(context: Rc<WebGl2RenderingContext>, program: Rc<WebGlProgram>) -> Self {
-        RectangleBufferDataMaker { context, program }
+        RectangleBufferDataMaker {}
     }
 }
 
@@ -185,62 +117,5 @@ impl BufferDataMaker for RectangleBufferDataMaker {
         }
 
         return rectangle_buffer_data;
-    }
-}
-
-pub struct RectangleBufferDataFiller {
-    pub context: Rc<WebGl2RenderingContext>,
-    pub program: Rc<WebGlProgram>,
-    pub buffer_data: Option<Vec<f32>>,
-}
-
-impl RectangleBufferDataFiller {
-    pub fn new(
-        context: Rc<WebGl2RenderingContext>,
-        program: Rc<WebGlProgram>,
-        buffer_data: Option<Vec<f32>>,
-    ) -> Self {
-        RectangleBufferDataFiller {
-            context,
-            program,
-            buffer_data,
-        }
-    }
-}
-
-impl BufferDataFiller for RectangleBufferDataFiller {
-    fn bind_buffer(&self) {
-        let buffer = self
-            .context
-            .create_buffer()
-            .ok_or("Failed to create buffer")
-            .unwrap();
-        self.context
-            .bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buffer));
-        let position_attribute_location = self
-            .context
-            .get_attrib_location(&self.program, "a_position");
-        self.context
-            .enable_vertex_attrib_array(position_attribute_location as u32);
-        self.context.vertex_attrib_pointer_with_i32(
-            position_attribute_location as u32,
-            3,
-            WebGl2RenderingContext::FLOAT,
-            false,
-            0,
-            0,
-        );
-    }
-
-    fn fill_with_buffer_data(&self) {
-        unsafe {
-            let array_buffer_view = js_sys::Float32Array::view(self.buffer_data.as_ref().unwrap());
-
-            self.context.buffer_data_with_array_buffer_view(
-                WebGl2RenderingContext::ARRAY_BUFFER,
-                &array_buffer_view,
-                WebGl2RenderingContext::STATIC_DRAW,
-            );
-        }
     }
 }
