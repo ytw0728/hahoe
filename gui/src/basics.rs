@@ -1,8 +1,15 @@
-use std::{rc::Rc};
+use std::rc::Rc;
 
 use lazy_static::lazy_static;
-use web_sys::{HtmlCanvasElement, WebGl2RenderingContext, WebGlProgram, HtmlInputElement};
-use wasm_bindgen::{JsValue, JsCast};
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::{HtmlCanvasElement, HtmlInputElement, WebGl2RenderingContext, WebGlProgram};
+
+use crate::{
+    dom::{get_canvas, get_document},
+    webgl::program::get_vertex_array_object,
+};
+
+const CANVAS_ID: &str = "canvas";
 
 // TODO: GuiBasics::new를 thread safe하게 변경해 전역 변수 제거해보기.
 lazy_static! {
@@ -20,30 +27,43 @@ pub struct GuiBasics {
 }
 
 impl GuiBasics {
-    pub fn new() -> Self {        
-        let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.get_element_by_id("canvas").unwrap();
+    pub fn new() -> Self {
+        let document = get_document();
+        let canvas = get_canvas(CANVAS_ID);
+
         let ranges = [
-            HtmlInputElement::from(JsValue::from(document.get_element_by_id("x_range").unwrap())),
-            HtmlInputElement::from(JsValue::from(document.get_element_by_id("y_range").unwrap())),
-            HtmlInputElement::from(JsValue::from(document.get_element_by_id("z_range").unwrap())),
-            HtmlInputElement::from(JsValue::from(document.get_element_by_id("d_range").unwrap())),
+            HtmlInputElement::from(JsValue::from(
+                document.get_element_by_id("x_range").unwrap(),
+            )),
+            HtmlInputElement::from(JsValue::from(
+                document.get_element_by_id("y_range").unwrap(),
+            )),
+            HtmlInputElement::from(JsValue::from(
+                document.get_element_by_id("z_range").unwrap(),
+            )),
+            HtmlInputElement::from(JsValue::from(
+                document.get_element_by_id("d_range").unwrap(),
+            )),
         ];
-        let canvas = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
-    
+
         let context = canvas
             .get_context("webgl2")
             .unwrap()
             .unwrap()
             .dyn_into::<WebGl2RenderingContext>()
             .unwrap();
-    
+
         let program = crate::webgl::program::get_program(&context);
+        context.use_program(Some(&program));
+
+        let vertex_array_object = get_vertex_array_object(&context);
+
+        context.bind_vertex_array(Some(&vertex_array_object));
 
         GuiBasics {
             canvas: Rc::new(canvas),
             context: Rc::new(context),
-            program: program,
+            program: Rc::new(program),
             ranges: Rc::new(ranges),
         }
     }

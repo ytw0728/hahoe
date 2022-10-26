@@ -1,12 +1,12 @@
-mod resources;
-mod components;
-mod systems;
 mod combinations;
+mod components;
+mod resources;
+mod systems;
 
-use combinations::Combination;
 use combinations::terrain::TerrainCombination;
+use combinations::Combination;
 use gui;
-use gui::basics::GUI_BASICS;
+use gui::webgl::buffer::update::Updater;
 use specs::Dispatcher;
 
 use std::cell::RefCell;
@@ -20,12 +20,14 @@ use wasm_bindgen::JsValue;
 pub fn main() -> Result<(), JsValue> {
     let mut world = World::new();
     // resources (bind)
-    world.insert(resources::physics::time::Time { time: std::time::Duration::new(0, 0), dt: 16 * 1000 * 1000});
+    world.insert(resources::physics::time::Time {
+        time: std::time::Duration::new(0, 0),
+        dt: 16 * 1000 * 1000,
+    });
 
     // dispatchers (init)
-    let mut dispatchers = vec![
-        TerrainCombination::init(&mut world),
-    ];
+    // system들이 세팅된 dispatcher 들의 벡터
+    let mut dispatchers = vec![TerrainCombination::init(&mut world)];
 
     play(world, dispatchers);
     Ok(())
@@ -36,9 +38,14 @@ fn play(mut world: World, mut dispatchers: Vec<Dispatcher<'static, 'static>>) {
     let f = Rc::new(RefCell::new(None));
     let g = Rc::clone(&f);
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        gui::webgl::clear(&GUI_BASICS.context);
+        let updater = Updater {};
+
+        updater.clear();
+        updater.set_basic_uniform_matrix();
+
+        // dispatcher 들을 순회하며 dispatch 메소드 실행. 현재 dispatchers 벡터에는 TerrainCombination 구조체만 들어가 있음.
         for dispatcher in dispatchers.iter_mut() {
-            dispatcher.dispatch(&world);    
+            dispatcher.dispatch(&world);
         }
         world.maintain();
 
