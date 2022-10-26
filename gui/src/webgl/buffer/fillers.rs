@@ -8,17 +8,17 @@ pub trait BufferDataFiller {
 
     fn fill_with_buffer_data(&self);
 }
-pub struct ColorBufferDataFiller {
-    pub buffer_data: Option<Vec<f32>>,
+pub struct ColorBufferDataFiller<'a> {
+    pub buffer_data: Option<&'a Vec<f32>>,
 }
 
-impl ColorBufferDataFiller {
-    pub fn new(buffer_data: Option<Vec<f32>>) -> Self {
+impl<'a> ColorBufferDataFiller<'a> {
+    pub fn new(buffer_data: Option<&'a Vec<f32>>) -> Self {
         ColorBufferDataFiller { buffer_data }
     }
 }
 
-impl BufferDataFiller for ColorBufferDataFiller {
+impl<'a> BufferDataFiller for ColorBufferDataFiller<'a> {
     fn bind_buffer(&self) {
         let context = Rc::clone(&GUI_BASICS.context);
         let program = Rc::clone(&GUI_BASICS.program);
@@ -55,17 +55,17 @@ impl BufferDataFiller for ColorBufferDataFiller {
     }
 }
 
-pub struct RectangleBufferDataFiller {
-    pub buffer_data: Option<Vec<f32>>,
+pub struct RectangleBufferDataFiller<'a> {
+    pub buffer_data: Option<&'a Vec<f32>>,
 }
 
-impl RectangleBufferDataFiller {
-    pub fn new(buffer_data: Option<Vec<f32>>) -> Self {
+impl<'a> RectangleBufferDataFiller<'a> {
+    pub fn new(buffer_data: Option<&'a Vec<f32>>) -> Self {
         RectangleBufferDataFiller { buffer_data }
     }
 }
 
-impl BufferDataFiller for RectangleBufferDataFiller {
+impl<'a> BufferDataFiller for RectangleBufferDataFiller<'a> {
     fn bind_buffer(&self) {
         let context = Rc::clone(&GUI_BASICS.context);
         let program = Rc::clone(&GUI_BASICS.program);
